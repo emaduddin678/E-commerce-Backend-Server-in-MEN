@@ -67,6 +67,11 @@ const productSchema = new Schema(
       ref: "Category",
       required: true,
     },
+    categoryName: {
+      type: String,
+      required: [true, "Category name is required"],
+      trim: true,
+    },
   },
   { timestamps: true }
 );

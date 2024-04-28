@@ -8,13 +8,23 @@ const {
   createProduct,
   getProducts,
   getProduct,
+  getProductBySlug,
+  deleteProductBySlug,
 } = require("../services/productService");
 const Category = require("../models/categoryModel");
 
 const handleCreateProduct = async (req, res, next) => {
   try {
-    const { name, description, price, quantity, shipping, category } = req.body;
-    const image = req.file;
+    const {
+      name,
+      description,
+      price,
+      quantity,
+      shipping,
+      category,
+      categoryName,
+    } = req.body;
+    const image = req.file; 
 
     if (!image) {
       throw createError(400, "Image file is required");
@@ -37,14 +47,16 @@ const handleCreateProduct = async (req, res, next) => {
       shipping,
       category,
       imageBufferString,
+      categoryName,
     };
+    console.log(categoryName)
 
     const product = await createProduct(productData);
 
     return successResponse(res, {
       statusCode: 200,
       message: `Product was created successfully.`,
-      payload: { product },
+      payload:  product ,
     });
   } catch (error) {
     next(error);
@@ -118,6 +130,7 @@ const handleUpdateProduct = async (req, res, next) => {
       "sold",
       "quantity",
       "shipping",
+      "categoryName",
     ];
     for (const key in req.body) {
       if (allowedFields.includes(key)) {
@@ -146,11 +159,11 @@ const handleUpdateProduct = async (req, res, next) => {
     );
 
     if (!updatedProduct) {
-      throw createError(404, "User with this id doesn't exists");
+      throw createError(404, "Product with this id doesn't exists");
     }
     return successResponse(res, {
       statusCode: 202,
-      message: "user was updated successfully",
+      message: "Product was updated successfully",
       payload: {
         updatedProduct,
       },

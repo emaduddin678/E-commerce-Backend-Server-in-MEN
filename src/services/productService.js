@@ -11,6 +11,7 @@ const createProduct = async (productData) => {
     shipping,
     category,
     imageBufferString,
+    categoryName,
   } = productData;
 
   const productExists = await Product.exists({ name: name });
@@ -27,6 +28,7 @@ const createProduct = async (productData) => {
     shipping: shipping,
     image: imageBufferString,
     category: category,
+    categoryName: categoryName,
   });
 
   return product;
