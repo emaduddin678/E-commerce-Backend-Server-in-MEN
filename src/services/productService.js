@@ -1,6 +1,6 @@
+const createError = require("http-errors");
 const slugify = require("slugify");
 const Product = require("../models/productModel");
-const createHttpError = require("http-errors");
 
 const createProduct = async (productData) => {
   const {
@@ -16,7 +16,7 @@ const createProduct = async (productData) => {
 
   const productExists = await Product.exists({ name: name });
   if (productExists) {
-    throw createHttpError(409, "Product with this name alrady exist. ");
+    throw createError(409, "Product with this name alrady exist. ");
   }
 
   const product = await Product.create({
@@ -51,7 +51,7 @@ const getProducts = async (page = 1, limit = 4) => {
     totalPages: Math.ceil(count / limit),
     currentPage: page,
   };
-};
+}; 
 
 const getProductBySlug = async (slug) => {
   const product = await Product.findOne({ slug }).populate("category");
@@ -66,9 +66,11 @@ const getProductBySlug = async (slug) => {
 
 const deleteProductBySlug = async (slug) => {
   const product = await Product.findOneAndDelete({ slug });
+  // console.log(product)
   if (!product) {
-    throw createError(404, "No product found");
+    throw createError(404, "No product found when delete a single.");
   }
+  return product;
 };
 
 module.exports = {

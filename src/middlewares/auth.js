@@ -8,20 +8,16 @@ const isLoggedIn = async (req, res, next) => {
     if (!accessToken) {
       throw createError(401, "Access token not found! Please login again.");
     }
-    // console.log(accessToken)
-    // console.log(jwtAccessKey)
+    
     const decoded = jwt.verify(accessToken, jwtAccessKey);
     if (!decoded) {
       throw createError(401, "Invalid access token. Please login again.");
     }
-    // console.log(decoded);
     // req.body.userId = decoded._id;
     req.user = decoded;
-    // console.log(req.user)
     
-    // console.log("it is ok");
     next();
-    // console.log(decoded);
+    
   } catch (error) {
     return next(error);
   }
@@ -31,7 +27,12 @@ const isLoggedOut = async (req, res, next) => {
   try {
     const accessToken = req.cookies.accessToken;
     if (accessToken) {
-      throw createError(400, "User is already logged in.");
+      try{const decoded = jwt.verify(accessToken, jwtAccessKey);
+      if (decoded) {
+        throw createError(400, "User is already logged in.");
+      }}catch(error) {
+        throw error;
+      }
     }
 
     next();
@@ -42,9 +43,10 @@ const isLoggedOut = async (req, res, next) => {
 
 const isAdmin = async (req, res, next) => {
   try {
-    // console.log("Admin" + req.user.isAdmin);
+    // console.log("Admin refresh token  => " + req.user.isAdmin);
+    // console.log("Admin login token  => " + req.user.user.isAdmin);
 
-    if (!req.user.isAdmin) {
+    if (!req.user.user.isAdmin) {
       throw createError(
         403,
         "Forbidden. You must be an admin to access this resources."

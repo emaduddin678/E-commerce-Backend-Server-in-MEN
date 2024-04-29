@@ -24,7 +24,7 @@ const handleCreateProduct = async (req, res, next) => {
       category,
       categoryName,
     } = req.body;
-    const image = req.file; 
+    const image = req.file;
 
     if (!image) {
       throw createError(400, "Image file is required");
@@ -49,14 +49,14 @@ const handleCreateProduct = async (req, res, next) => {
       imageBufferString,
       categoryName,
     };
-    console.log(categoryName)
+    console.log(categoryName);
 
     const product = await createProduct(productData);
 
     return successResponse(res, {
       statusCode: 200,
       message: `Product was created successfully.`,
-      payload:  product ,
+      payload: product,
     });
   } catch (error) {
     next(error);
@@ -106,14 +106,15 @@ const handleGetProduct = async (req, res, next) => {
 const handleDeleteProduct = async (req, res, next) => {
   try {
     const { slug } = req.params;
-    const product = deleteProductBySlug(slug);
+    await deleteProductBySlug(slug);
+    // console.log(product) 
 
     return successResponse(res, {
       statusCode: 200,
       message: `Product deleted successfully.`,
     });
   } catch (error) {
-    console.log("my error", error);
+    next(error)
   }
 };
 
@@ -153,10 +154,10 @@ const handleUpdateProduct = async (req, res, next) => {
     }
 
     const updatedProduct = await Product.findOneAndUpdate(
-      {slug},
+      { slug },
       updates,
       updateOptions
-    );
+    ); 
 
     if (!updatedProduct) {
       throw createError(404, "Product with this id doesn't exists");

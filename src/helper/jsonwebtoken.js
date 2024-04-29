@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 
 const createJSONWebToken = (payload, secretKey, expiresIn) => {
   if (typeof payload !== "object" || !payload) {
-    throw new Error("Payload must be a non-empty object");
+    throw new Error("Payload must be a non-empty object!");
   }
 
   if (typeof secretKey !== "string" || secretKey === "") {
@@ -14,7 +14,7 @@ const createJSONWebToken = (payload, secretKey, expiresIn) => {
 
     return token;
   } catch (error) {
-    console.error("Failed to sign the JWT:", error);
+    console.error("Failed to sign the JWT emad:", error);
     throw error;
   }
 };

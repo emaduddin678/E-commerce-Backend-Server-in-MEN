@@ -23,6 +23,7 @@ const handleLogin = async (req, res, next) => {
         "User does not exist with this email. Please register first"
       );
     }
+    // console.log(user);
 
     const isPasswordMatch = await bcrypt.compare(password, user.password);
     if (!isPasswordMatch) {
@@ -32,6 +33,8 @@ const handleLogin = async (req, res, next) => {
     if (user.isBanned) {
       throw createError(403, "You are Banned. Please contact authority");
     }
+    console.log(user)
+    console.log({user})
 
     // token, cookie
     const accessToken = createJSONWebToken({ user }, jwtAccessKey, "5m");
@@ -93,14 +96,15 @@ const handleRefreshToken = async (req, res, next) => {
       throw createError(401, "Invalid refresh token. Please login again");
     }
 
-    // token, cookie
-    const accessToken = createJSONWebToken(
-      decodedToken.user,
-      jwtAccessKey,
-      "5m"
-    );
+    // console.log(decodedToken)
+    const newUsers = {};
+    newUsers.user = decodedToken.user;
+    // const newUser = decodedToken.user;
     
-    setAccessTokenCookie(res, accessToken)
+    // token, cookie
+    const accessToken = createJSONWebToken(newUsers, jwtAccessKey, "5m");
+
+    setAccessTokenCookie(res, accessToken);
 
     // success response
     return successResponse(res, {

@@ -6,8 +6,7 @@ const {
   handleProcessRegister,
   handleActivateUserAccount,
   handleUpdateUserById,
-  handleBanUserById,
-  handleUnbanUserById,
+  handleManageUserStatusById,
   handleUpdatePassword,
   handleForgetPassword,
   handleResetPassword,
@@ -48,18 +47,26 @@ userRouter.put(
   isLoggedIn,
   handleUpdateUserById
 );
+// userRouter.put(
+//   "/ban-user/:id([0-9a-fA-F]{24})",
+//   isLoggedIn,
+//   isAdmin,
+//   handleBanUserById
+// );
+// userRouter.put(
+//   "/unban-user/:id([0-9a-fA-F]{24})",
+//   isLoggedIn,
+//   isAdmin,
+//   handleUnbanUserById
+// );
+
 userRouter.put(
-  "/ban-user/:id([0-9a-fA-F]{24})",
+  "/manage-user/:id([0-9a-fA-F]{24})",
   isLoggedIn,
   isAdmin,
-  handleBanUserById
+  handleManageUserStatusById
 );
-userRouter.put(
-  "/unban-user/:id([0-9a-fA-F]{24})",
-  isLoggedIn,
-  isAdmin,
-  handleUnbanUserById
-);
+
 userRouter.put(
   "/update-password/:id([0-9a-fA-F]{24})",
   validateUserPasswordUpdate,
