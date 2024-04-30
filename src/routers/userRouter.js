@@ -69,6 +69,13 @@ userRouter.put(
   handleManageUserStatusById
 );
 
+userRouter.post(
+  "/forget-password",
+  validateUserForgetPassword,
+  runValidation,
+  handleForgetPassword
+);
+
 userRouter.put(
   "/update-password/:id([0-9a-fA-F]{24})",
   validateUserPasswordUpdate,
@@ -77,11 +84,5 @@ userRouter.put(
   handleUpdatePassword
 );
 
-userRouter.post(
-  "/forget-password",
-  validateUserForgetPassword,
-  runValidation,
-  handleForgetPassword
-);
 
 module.exports = userRouter;

@@ -1,8 +1,11 @@
 const mongoose = require("mongoose");
 const createError = require("http-errors");
-const bcrypt = require("bcryptjs")
+const bcrypt = require("bcryptjs");
 const User = require("../models/userModel");
 const deleteImage = require("../helper/deleteImage");
+const sendEmail = require("../helper/sendEmail");
+const { jwtResetPasswordKey, clientURL } = require("../secret");
+const { createJSONWebToken } = require("../helper/jsonwebtoken");
 
 const findeUsers = async (search, limit, page) => {
   try {
@@ -137,11 +140,8 @@ const updateUserPasswordById = async (
   try {
     const user = await User.findOne({ email: email });
 
-    if(!user) {
-      throw createError(
-        401,
-        "User is not found with this email!"
-      );
+    if (!user) {
+      throw createError(401, "User is not found with this email!");
     }
 
     if (newPassword !== confirmedPassword) {
@@ -171,11 +171,42 @@ const updateUserPasswordById = async (
     }
 
     return updatedUser;
-
   } catch (error) {
     if (error instanceof mongoose.Error.CastError) {
       throw createError(400, "Invalid Id");
     }
+    throw error;
+  }
+};
+const forgetPasswordByEmail = async (email) => {
+  try {
+    const userData = await User.findOne({ email: email });
+    if (!userData) {
+      throw createError(
+        404,
+        "Email is incorrect or you have not verified your email address. Please register yourself first."
+      );
+    }
+
+    // create jwt
+    const token = createJSONWebToken({ email }, jwtResetPasswordKey, "10m");
+
+    //prepare email
+    const emailData = {
+      email,
+      subject: "Reset Password Email",
+      html: `
+        <h2> Hello ${userData.name} !</h2>
+        <p> Please click here to link <a href="${clientURL}/api/users/reset-password/${token}" target="_blank"> Reset your Password </a></p>
+      `,
+    };
+
+    //send email with nodemailer
+    sendEmail(emailData);
+
+    return token;
+  } catch (error) {
+   
     throw error;
   }
 };
@@ -233,5 +264,6 @@ module.exports = {
   deleteUserById,
   updateUserById,
   updateUserPasswordById,
+  forgetPasswordByEmail,
   handleUserAction,
 };
