@@ -76,30 +76,6 @@ const handleDeleteUserById = async (req, res, next) => {
     const id = req.params.id;
     const options = { password: 0 };
 
-    // const userImagePath = user.image;
-    // deleteImage(userImagePath);
-    // fs.access(userImagePath)
-    //   .then(() => {
-    //     fs.unlink(userImagePath);
-    //   })
-    //   .then(() => {
-    //     console.log("User image was deleted");
-    //   }).catch(err =>{
-    //     console.error("User image does not exist");
-    //   });
-
-    // fs.access(userImagePath, (err) => {
-    //   if (err) {
-    //     console.error("User image does not exist");
-    //   } else {
-    //     fs.unlink(userImagePath, (err) => {
-    //       if (err) {
-    //         throw err;
-    //       }
-    //     });
-    //   }
-    // });
-
     await deleteUserById(id, options);
 
     return successResponse(res, {
@@ -107,6 +83,8 @@ const handleDeleteUserById = async (req, res, next) => {
       message: "user was deleted successfully",
     });
   } catch (err) {
+    
+
     next(err);
   }
 };
@@ -223,7 +201,6 @@ const handleUpdateUserById = async (req, res, next) => {
     const userId = req.params.id;
     const options = { password: 0 };
     const updatedUser = await updateUserById(req, userId, options);
-    
 
     return successResponse(res, {
       statusCode: 202,
@@ -231,7 +208,7 @@ const handleUpdateUserById = async (req, res, next) => {
       payload: {
         updatedUser,
       },
-    });  
+    });
   } catch (err) {
     next(err);
   }

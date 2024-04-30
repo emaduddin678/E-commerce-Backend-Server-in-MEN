@@ -47,6 +47,8 @@ userRouter.put(
   uploadUserImage.single("image"),
   handleUpdateUserById
 );
+
+
 // userRouter.put(
 //   "/ban-user/:id([0-9a-fA-F]{24})",
 //   isLoggedIn,
