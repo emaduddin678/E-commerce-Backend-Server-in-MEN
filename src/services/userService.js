@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const createError = require("http-errors");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
 const deleteImage = require("../helper/deleteImage");
 const sendEmail = require("../helper/sendEmail");
@@ -178,6 +179,8 @@ const updateUserPasswordById = async (
     throw error;
   }
 };
+
+
 const forgetPasswordByEmail = async (email) => {
   try {
     const userData = await User.findOne({ email: email });
@@ -207,6 +210,32 @@ const forgetPasswordByEmail = async (email) => {
     return token;
   } catch (error) {
    
+    throw error;
+  }
+};
+
+const resetPassword = async (token, password) => {
+  try {
+    const decoded = jwt.verify(token, jwtResetPasswordKey);
+
+    if (!decoded) {
+      throw createError(400, "Invalid or expired token.");
+    }
+    
+    const filter = { email: decoded.email };
+    const update = { password: password };
+    const options = { new: true };
+    const updatedUser = await User.findOneAndUpdate(
+      filter,
+      update,
+      options
+    ).select("-password");
+
+    if (!updatedUser) {
+      throw createError(400, "Password reset failed");
+    }
+
+  } catch (error) {
     throw error;
   }
 };
@@ -265,5 +294,6 @@ module.exports = {
   updateUserById,
   updateUserPasswordById,
   forgetPasswordByEmail,
+  resetPassword,
   handleUserAction,
 };

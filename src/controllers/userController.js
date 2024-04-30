@@ -23,6 +23,7 @@ const {
   updateUserById,
   updateUserPasswordById,
   forgetPasswordByEmail,
+  resetPassword,
 } = require("../services/userService");
 // const mongoose = require("mongoose");
 // const fs = require("fs").promises;
@@ -330,29 +331,11 @@ const handleForgetPassword = async (req, res, next) => {
 const handleResetPassword = async (req, res, next) => {
   try {
     const { token, password } = req.body;
-    const decoded = jwt.verify(token, jwtResetPasswordKey);
-
-    if (!decoded) {
-      throw createError(400, "Invalid or expired token.");
-    }
-
-    const filter = { email: decoded.email };
-    const update = { password: password };
-    const options = { new: true };
-    const updatedUser = await User.findOneAndUpdate(
-      filter,
-      update,
-      options
-    ).select("-password");
-
-    if (!updatedUser) {
-      throw createError(400, "Password reset failed");
-    }
+    await resetPassword(token, password);
 
     return successResponse(res, {
       statusCode: 202,
       message: "Password reset successfully",
-      payload: {},
     });
   } catch (err) {
     next(err);
