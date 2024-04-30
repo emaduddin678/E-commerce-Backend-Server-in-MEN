@@ -15,7 +15,12 @@ const emailWithNodeMailer = require("../helper/email");
 const bcrypt = require("bcryptjs");
 const checkUserExists = require("../helper/checkUserExists");
 const sendEmail = require("../helper/sendEmail");
-const { handleUserAction } = require("../services/userService");
+const {
+  handleUserAction,
+  findeUsers,
+  findUserById,
+  deleteUserById,
+} = require("../services/userService");
 // const mongoose = require("mongoose");
 // const fs = require("fs").promises;
 
@@ -25,38 +30,14 @@ const handleGetUsers = async (req, res, next) => {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 5;
 
-    const searchRegExp = new RegExp(".*" + search + ".*", "i");
-    // console.log(typeof search);
-
-    const filter = {
-      isAdmin: { $ne: true },
-      $or: [
-        { name: { $regex: searchRegExp } },
-        { email: { $regex: searchRegExp } },
-        { phone: { $regex: searchRegExp } },
-      ],
-    };
-    const options = { password: 0 };
-
-    const users = await User.find(filter, options)
-      .limit(limit)
-      .skip((page - 1) * limit);
-
-    const count = await User.find(filter).countDocuments();
-
-    if (!users || users.length === 0) throw createError(404, "no users found");
+    const { users, pagination } = await findeUsers(search, limit, page);
 
     return successResponse(res, {
       statusCode: 202,
       message: "users were returned successfully",
       payload: {
-        users,
-        pagination: {
-          totalPages: Math.ceil(count / limit),
-          currentPage: page,
-          previousPage: page - 1 > 0 ? page - 1 : null,
-          nextPage: page + 1 <= Math.ceil(count / limit) ? page + 1 : null,
-        },
+        users: users,
+        pagination: pagination,
       },
     });
   } catch (error) {
@@ -75,7 +56,8 @@ const handleGetUserById = async (req, res, next) => {
 
     // finding in services for user
     const options = { password: 0 };
-    const user = await findWithId(User, id, options);
+    // const user = await findWithId(User, id, options);
+    const user = await findUserById(id, options);
     return successResponse(res, {
       statusCode: 202,
       message: "user was returned successfully",
@@ -92,7 +74,6 @@ const handleDeleteUserById = async (req, res, next) => {
   try {
     const id = req.params.id;
     const options = { password: 0 };
-    const user = await findWithId(User, id, options);
 
     // const userImagePath = user.image;
     // deleteImage(userImagePath);
@@ -116,23 +97,13 @@ const handleDeleteUserById = async (req, res, next) => {
     //       }
     //     });
     //   }
-    // }); 
+    // });
 
-    await User.findByIdAndDelete({
-      _id: id,
-      isAdmin: false,
-    });
-
-    if(user && user.image) {
-      await deleteImage(user.image)
-    }
+    await deleteUserById(id, options);
 
     return successResponse(res, {
       statusCode: 202,
       message: "user was deleted successfully",
-      payload: {
-        user,
-      },
     });
   } catch (err) {
     next(err);
@@ -147,7 +118,7 @@ const handleProcessRegister = async (req, res, next) => {
     // console.log("emad 2");
 
     const image = req.file?.path;
-    
+
     if (image && image.size > 1024 * 1024 * 4) {
       throw createError(
         400,
@@ -225,11 +196,12 @@ const handleActivateUserAccount = async (req, res, next) => {
         );
       }
 
-      await User.create(decoded);
+      const user = await User.create(decoded);
 
       return successResponse(res, {
         statusCode: 201,
         message: `User was registration successfully`,
+        payload: user,
       });
     } catch (error) {
       if (error.name === "TokenExpiredError") {
@@ -284,7 +256,7 @@ const handleUpdateUserById = async (req, res, next) => {
       }
       // updates.image = image.buffer.toString("base64");
       updates.image = image;
-      user.image !== "default.jpg" && deleteImage(user.image)
+      user.image !== "default.jpg" && deleteImage(user.image);
     }
 
     const updatedUser = await User.findByIdAndUpdate(

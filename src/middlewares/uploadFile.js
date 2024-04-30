@@ -23,9 +23,7 @@ const userStorage = multer.diskStorage({
     // console.log(file);
     // const extname = path.extname(file.originalname);
     // console.log(extname);
-    cb(
-      null,
-      Date.now() + "-" + file.originalname);
+    cb(null, file.originalname + "-" + Date.now());
   },
 });
 
@@ -58,7 +56,7 @@ const fileFilter = (req, file, cb) => {
 
 const uploadUserImage = multer({
   storage: userStorage,
-  limits: {fileSize: MAX_FILE_SIZE},
+  limits: { fileSize: MAX_FILE_SIZE },
   fileFilter: fileFilter,
 });
 

@@ -24,8 +24,8 @@ const userRouter = express.Router();
 
 userRouter.post(
   "/process-register",
-  uploadUserImage.single("image"),
   isLoggedOut,
+  uploadUserImage.single("image"),
   validateUserRagistration,
   runValidation,
   handleProcessRegister
