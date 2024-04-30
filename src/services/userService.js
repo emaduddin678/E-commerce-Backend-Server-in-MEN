@@ -38,6 +38,7 @@ const findeUsers = async (search, limit, page) => {
     throw error;
   }
 };
+
 const findUserById = async (id, options = {}) => {
   try {
     const user = await User.findById(id, options);
@@ -49,6 +50,7 @@ const findUserById = async (id, options = {}) => {
     throw error;
   }
 };
+
 const deleteUserById = async (id, options = {}) => {
   try {
     const user = await User.findByIdAndDelete({
@@ -65,6 +67,50 @@ const deleteUserById = async (id, options = {}) => {
     }
 
     return user;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const updateUserById = async (req, userId, options = {}) => {
+  try {
+    const user = await findUserById(userId, options);
+    const updateOptions = { new: true, runValidators: true, context: "query" };
+    let updates = {};
+
+    const allowedFields = ["name", "password", "phone", "address"];
+    for (const key in req.body) {
+      if (allowedFields.includes(key)) {
+        updates[key] = req.body[key];
+      } else if (key === "email") {
+        throw createError(400, "Email can not be updated.");
+      }
+    }
+
+    const image = req.file?.path;
+    if (image) {
+      if (image.size > 1024 * 1024 * 4) {
+        throw createError(
+          400,
+          "Image file is too large. It must be less than 4mb"
+        );
+      }
+      // updates.image = image.buffer.toString("base64");
+      updates.image = image;
+      user.image !== "default.jpg" && deleteImage(user.image);
+    }
+ 
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      updates,
+      updateOptions
+    ).select("-password");
+
+    if (!updatedUser) {
+      throw createError(404, "User with this id doesn't exists");
+    }
+
+    return updatedUser;
   } catch (error) {
     throw error;
   }
@@ -114,4 +160,10 @@ const handleUserAction = async (action, userId) => {
   }
 };
 
-module.exports = { findeUsers, findUserById, deleteUserById, handleUserAction };
+module.exports = {
+  findeUsers,
+  findUserById,
+  deleteUserById,
+  updateUserById,
+  handleUserAction,
+};

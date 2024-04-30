@@ -23,7 +23,15 @@ const userStorage = multer.diskStorage({
     // console.log(file);
     // const extname = path.extname(file.originalname);
     // console.log(extname);
-    cb(null, file.originalname + "-" + Date.now());
+    cb(
+      null,
+      "savedAt=" +
+        new Date().toLocaleDateString().replace(/\//g, "-") +
+        "_at_" +
+        new Date().toLocaleTimeString().replace(/[: ]/g, "_") +
+        "-originalName=" +
+        file.originalname
+    );
   },
 });
 

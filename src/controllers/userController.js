@@ -20,6 +20,7 @@ const {
   findeUsers,
   findUserById,
   deleteUserById,
+  updateUserById,
 } = require("../services/userService");
 // const mongoose = require("mongoose");
 // const fs = require("fs").promises;
@@ -221,60 +222,16 @@ const handleUpdateUserById = async (req, res, next) => {
   try {
     const userId = req.params.id;
     const options = { password: 0 };
-    const user = await findWithId(User, userId, options);
-    const updateOptions = { new: true, runValidators: true, context: "query" };
-    let updates = {};
+    const updatedUser = await updateUserById(req, userId, options);
+    
 
-    // if (req.body.name) {
-    //   updates.name = req.body.name;
-    // }
-    // if (req.body.password) {
-    //   updates.password = req.body.password;
-    // }
-    // if (req.body.phone) {
-    //   updates.phone = req.body.phone;
-    // }
-    // if (req.body.address) {
-    //   updates.address = req.body.address;
-    // }
-    const allowedFields = ["name", "password", "phone", "address"];
-    for (const key in req.body) {
-      if (allowedFields.includes(key)) {
-        updates[key] = req.body[key];
-      } else if (key === "email") {
-        throw createError(400, "Email can not be updated.");
-      }
-    }
-
-    const image = req.file?.path;
-    if (image) {
-      if (image.size > 1024 * 1024 * 4) {
-        throw createError(
-          400,
-          "Image file is too large. It must be less than 4mb"
-        );
-      }
-      // updates.image = image.buffer.toString("base64");
-      updates.image = image;
-      user.image !== "default.jpg" && deleteImage(user.image);
-    }
-
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      updates,
-      updateOptions
-    ).select("-password");
-
-    if (!updatedUser) {
-      throw createError(404, "User with this id doesn't exists");
-    }
     return successResponse(res, {
       statusCode: 202,
       message: "user was updated successfully",
       payload: {
         updatedUser,
       },
-    });
+    });  
   } catch (err) {
     next(err);
   }
