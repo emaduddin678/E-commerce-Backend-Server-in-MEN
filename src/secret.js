@@ -6,7 +6,7 @@ const mongodbURL =
 
 const defaultImagePath =
   process.env.DEFAULT_USER_IMAGE_PATH ||
-  "../public/images/users/default.jpg";
+  "public/images/users/default.jpg";
 
 const jwtActivationKey =
   process.env.JWT_ACTIVATION_KEY || "I$CREATED_THIS@ACTIVATION%KEY%";

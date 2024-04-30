@@ -30,10 +30,10 @@ const handleCreateProduct = async (req, res, next) => {
       throw createError(400, "Image file is required");
     }
 
-    if (image.size > 1024 * 1024 * 2) {
+    if (image.size > 1024 * 1024 * 4) {
       throw createError(
         400,
-        "Image file is too large. It must be less than 2mb"
+        "Image file is too large. It must be less than 4mb"
       );
     }
 
@@ -144,10 +144,10 @@ const handleUpdateProduct = async (req, res, next) => {
 
     const image = req.file;
     if (image) {
-      if (image.size > 1024 * 1024 * 2) {
+      if (image.size > 1024 * 1024 * 4) {
         throw createError(
           400,
-          "Image file is too large. It must be less than 2mb"
+          "Image file is too large. It must be less than 4mb"
         );
       }
       updates.image = image.buffer.toString("base64");

@@ -36,16 +36,16 @@ const validateUserRagistration = [
     .trim()
     .notEmpty()
     .withMessage("Phone is required. Enter your phone Number: "),
-  // body("image").optional().isString().withMessage("Phone is required"),
-  body("image")
-    .custom((value, { req }) => {
-      // console.log(req)
-      if (!req.file || !req.file.buffer) {
-        throw new Error("User image is required in validate condition");
-      }
-      return true;
-    })
-    .withMessage("User image is required in validation"),
+  body("image").optional().isString().withMessage("User image is optional"),
+  // body("image")
+  //   .custom((value, { req }) => {
+  //     // console.log(req)
+  //     if (!req.file || !req.file.buffer) {
+  //       throw new Error("User image is required in validate condition");
+  //     }
+  //     return true;
+  //   })
+  //   .withMessage("User image is required in validation"),
 ];
 
 // signin validation
@@ -129,7 +129,6 @@ const validateUserResetPassword = [
       "Password should contain at least one uppercase letter, one lowercase letter, one number and one special character"
     ),
 ];
-
 
 module.exports = {
   validateUserRagistration,

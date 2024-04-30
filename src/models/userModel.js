@@ -31,10 +31,10 @@ const userSchema = new Schema(
       set: (v) => bcrypt.hashSync(v, bcrypt.genSaltSync(10)),
     },
     image: {
-      type: Buffer,
-      contentType: String,
+      // type: Buffer,
+      // contentType: String,
       // required: [true, "User Image is required"],
-      // type: String,
+      type: String,
       default: defaultImagePath,
     },
     address: {

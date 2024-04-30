@@ -1,4 +1,4 @@
-const fs = require("fs").promises;
+const fs = require("fs/promises");
 
 const deleteImage = async (userImagePath) => {
   try {
@@ -7,6 +7,7 @@ const deleteImage = async (userImagePath) => {
     console.log("User image was deleted");
   } catch (error) {
     console.error("user image does not exist");
+    throw error;
   }
 
   // fs.access(userImagePath)

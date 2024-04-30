@@ -116,12 +116,16 @@ const handleDeleteUserById = async (req, res, next) => {
     //       }
     //     });
     //   }
-    // });
+    // }); 
 
     await User.findByIdAndDelete({
       _id: id,
       isAdmin: false,
     });
+
+    if(user && user.image) {
+      await deleteImage(user.image)
+    }
 
     return successResponse(res, {
       statusCode: 202,
@@ -136,26 +140,23 @@ const handleDeleteUserById = async (req, res, next) => {
 };
 
 const handleProcessRegister = async (req, res, next) => {
-  console.log("emad 1");
+  // console.log("emad 1");
   try {
     const { name, email, password, phone, address } = req.body;
     // res.send(req.body);
-    console.log("emad 2");
+    // console.log("emad 2");
 
-    const image = req.file;
-    if (!image) {
-      throw createError(400, "Image file is required");
-    }
-
-    if (image.size > 1024 * 1024 * 2) {
+    const image = req.file?.path;
+    
+    if (image && image.size > 1024 * 1024 * 4) {
       throw createError(
         400,
-        "Image file is too large. It must be less than 2mb"
+        "Image file is too large. It must be less than 4mb"
       );
     }
-    console.log("emad 3");
+    // console.log("emad 3");
 
-    const imageBufferString = image.buffer.toString("base64");
+    // const imageBufferString = image.buffer.toString("base64");
 
     const userExists = await checkUserExists(email);
 
@@ -165,14 +166,22 @@ const handleProcessRegister = async (req, res, next) => {
         "User with this email already exist. Please login"
       );
     }
-    console.log("emad 4");
+    // console.log("emad 4");
 
     // create jwt
-    const token = createJSONWebToken(
-      { name, email, password, phone, address },
-      jwtActivationKey,
-      "10m"
-    );
+    const tokenPayload = {
+      name,
+      email,
+      password,
+      phone,
+      address,
+    };
+
+    if (image) {
+      tokenPayload.image = image;
+    }
+
+    const token = createJSONWebToken(tokenPayload, jwtActivationKey, "10m");
 
     //prepare email
     const emailData = {
@@ -186,7 +195,7 @@ const handleProcessRegister = async (req, res, next) => {
 
     //send email with nodemailer
     sendEmail(emailData);
-    console.log("emai emad");
+    // console.log("emai emad");
 
     return successResponse(res, {
       statusCode: 200,
@@ -240,7 +249,7 @@ const handleUpdateUserById = async (req, res, next) => {
   try {
     const userId = req.params.id;
     const options = { password: 0 };
-    await findWithId(User, userId, options);
+    const user = await findWithId(User, userId, options);
     const updateOptions = { new: true, runValidators: true, context: "query" };
     let updates = {};
 
@@ -265,15 +274,17 @@ const handleUpdateUserById = async (req, res, next) => {
       }
     }
 
-    const image = req.file;
+    const image = req.file?.path;
     if (image) {
-      if (image.size > 1024 * 1024 * 2) {
+      if (image.size > 1024 * 1024 * 4) {
         throw createError(
           400,
-          "Image file is too large. It must be less than 2mb"
+          "Image file is too large. It must be less than 4mb"
         );
       }
-      updates.image = image.buffer.toString("base64");
+      // updates.image = image.buffer.toString("base64");
+      updates.image = image;
+      user.image !== "default.jpg" && deleteImage(user.image)
     }
 
     const updatedUser = await User.findByIdAndUpdate(

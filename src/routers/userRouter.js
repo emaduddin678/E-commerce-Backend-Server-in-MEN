@@ -11,7 +11,7 @@ const {
   handleForgetPassword,
   handleResetPassword,
 } = require("../controllers/userController");
-const upload = require("../middlewares/uploadFile");
+const uploadUserImage = require("../middlewares/uploadFile");
 const {
   validateUserRagistration,
   validateUserPasswordUpdate,
@@ -24,7 +24,7 @@ const userRouter = express.Router();
 
 userRouter.post(
   "/process-register",
-  upload.single("image"),
+  uploadUserImage.single("image"),
   isLoggedOut,
   validateUserRagistration,
   runValidation,
@@ -43,8 +43,8 @@ userRouter.put(
 
 userRouter.put(
   "/:id([0-9a-fA-F]{24})",
-  upload.single("image"),
   isLoggedIn,
+  uploadUserImage.single("image"),
   handleUpdateUserById
 );
 // userRouter.put(
