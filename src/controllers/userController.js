@@ -21,6 +21,7 @@ const {
   findUserById,
   deleteUserById,
   updateUserById,
+  updateUserPasswordById,
 } = require("../services/userService");
 // const mongoose = require("mongoose");
 // const fs = require("fs").promises;
@@ -288,30 +289,17 @@ const handleManageUserStatusById = async (req, res, next) => {
 
 const handleUpdatePassword = async (req, res, next) => {
   try {
-    const { oldPassword, newPassword } = req.body;
+    const { email, oldPassword, newPassword, confirmedPassword } = req.body;
 
     const userId = req.params.id;
-    const user = await findWithId(User, userId);
 
-    // compare the password
-    const isPasswordMatch = await bcrypt.compare(oldPassword, user.password);
-    if (!isPasswordMatch) {
-      throw createError(401, "Old password is incorrect");
-    }
-
-    // const filter = { userId };
-    // const updates = { $set: { password: newPassword } };
-    // const updateOptions = {new: true}
-
-    const updatedUser = await User.findByIdAndUpdate(
+    const updatedUser = await updateUserPasswordById(
       userId,
-      { password: newPassword },
-      { new: true }
-    ).select("-password");
-
-    if (!updatedUser) {
-      throw createError(400, "User was not updated successfully");
-    }
+      email,
+      oldPassword,
+      newPassword,
+      confirmedPassword
+    );
 
     return successResponse(res, {
       statusCode: 202,
