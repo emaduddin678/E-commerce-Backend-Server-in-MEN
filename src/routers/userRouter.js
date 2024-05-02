@@ -11,7 +11,7 @@ const {
   handleForgetPassword,
   handleResetPassword,
 } = require("../controllers/userController");
-const uploadUserImage = require("../middlewares/uploadFile");
+// const { uploadUserImage } = require("../middlewares/uploadFile");
 const {
   validateUserRagistration,
   validateUserPasswordUpdate,
@@ -20,6 +20,7 @@ const {
 } = require("../validators/auth");
 const runValidation = require("../validators");
 const { isLoggedIn, isLoggedOut, isAdmin } = require("../middlewares/auth");
+const { uploadUserImage } = require("../middlewares/uploadFile");
 const userRouter = express.Router();
 
 userRouter.post(
@@ -47,7 +48,6 @@ userRouter.put(
   uploadUserImage.single("image"),
   handleUpdateUserById
 );
-
 
 // userRouter.put(
 //   "/ban-user/:id([0-9a-fA-F]{24})",
@@ -83,6 +83,5 @@ userRouter.put(
   isLoggedIn,
   handleUpdatePassword
 );
-
 
 module.exports = userRouter;

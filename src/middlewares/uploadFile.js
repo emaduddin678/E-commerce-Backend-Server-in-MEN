@@ -6,6 +6,7 @@ const {
   ALLOWED_FILE_TYPES,
   MAX_FILE_SIZE,
   UPLOAD_USER_IMG_DIRECTORY,
+  UPLOAD_PRODUCT_IMG_DIRECTORY,
 } = require("../config");
 // const {
 //   ALLOWED_FILE_TYPES,
@@ -18,6 +19,25 @@ const {
 const userStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, UPLOAD_USER_IMG_DIRECTORY);
+  },
+  filename: function (req, file, cb) {
+    // console.log(file);
+    // const extname = path.extname(file.originalname);
+    // console.log(extname);
+    cb(
+      null,
+      "savedAt=" +
+        new Date().toLocaleDateString().replace(/\//g, "-") +
+        "_at_" +
+        new Date().toLocaleTimeString().replace(/[: ]/g, "_") +
+        "-originalName=" +
+        file.originalname
+    );
+  },
+});
+const productStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, UPLOAD_PRODUCT_IMG_DIRECTORY);
   },
   filename: function (req, file, cb) {
     // console.log(file);
@@ -62,10 +82,19 @@ const fileFilter = (req, file, cb) => {
   cb(null, true);
 };
 
-const uploadUserImage = multer({
+const uploadUserImage = multer({ 
   storage: userStorage,
   limits: { fileSize: MAX_FILE_SIZE },
   fileFilter: fileFilter,
 });
 
-module.exports = uploadUserImage;
+const uploadProductImage = multer({
+  storage: productStorage,
+  limits: { fileSize: MAX_FILE_SIZE },
+  fileFilter: fileFilter,
+});
+
+module.exports = {
+  uploadUserImage,
+  uploadProductImage,
+};
