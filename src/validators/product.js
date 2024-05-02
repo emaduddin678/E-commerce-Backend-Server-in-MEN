@@ -31,6 +31,7 @@ const validateProduct = [
     .trim()
     .notEmpty()
     .withMessage("Category name is required. validate: categoryName"),
+  body("image").optional().isString().withMessage("Product image is optional"),
 ];
 
 module.exports = {

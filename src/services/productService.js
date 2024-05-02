@@ -1,23 +1,18 @@
 const createError = require("http-errors");
 const slugify = require("slugify");
 const Product = require("../models/productModel");
+const Category = require("../models/categoryModel");
 
 const createProduct = async (productData) => {
-  const {
-    name,
-    description,
-    price,
-    quantity,
-    shipping,
-    category,
-    imageBufferString,
-    categoryName,
-  } = productData;
+  const { name, description, price, quantity, shipping, category, image } =
+    productData;
 
   const productExists = await Product.exists({ name: name });
   if (productExists) {
     throw createError(409, "Product with this name alrady exist. ");
   }
+
+  const categoryObject = await Category.findById(category);
 
   const product = await Product.create({
     name: name,
@@ -26,9 +21,9 @@ const createProduct = async (productData) => {
     price: price,
     quantity: quantity,
     shipping: shipping,
-    image: imageBufferString,
+    image: image,
     category: category,
-    categoryName: categoryName,
+    categoryName: categoryObject.name,
   });
 
   return product;
@@ -51,7 +46,7 @@ const getProducts = async (page = 1, limit = 4) => {
     totalPages: Math.ceil(count / limit),
     currentPage: page,
   };
-}; 
+};
 
 const getProductBySlug = async (slug) => {
   const product = await Product.findOne({ slug }).populate("category");

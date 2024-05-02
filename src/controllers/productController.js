@@ -7,7 +7,6 @@ const { default: slugify } = require("slugify");
 const {
   createProduct,
   getProducts,
-  getProduct,
   getProductBySlug,
   deleteProductBySlug,
 } = require("../services/productService");
@@ -24,20 +23,17 @@ const handleCreateProduct = async (req, res, next) => {
       category,
       categoryName,
     } = req.body;
-    const image = req.file;
 
-    if (!image) {
-      throw createError(400, "Image file is required");
-    }
+    const image = req.file?.path;
 
-    if (image.size > 1024 * 1024 * 4) {
+    if (image && image.size > 1024 * 1024 * 4) {
       throw createError(
         400,
         "Image file is too large. It must be less than 4mb"
       );
     }
 
-    const imageBufferString = image.buffer.toString("base64");
+    // const imageBufferString = image.buffer.toString("base64");
 
     const productData = {
       name,
@@ -45,11 +41,12 @@ const handleCreateProduct = async (req, res, next) => {
       price,
       quantity,
       shipping,
-      category,
-      imageBufferString,
-      categoryName,
+      category
     };
-    console.log(categoryName);
+
+    if (image) {
+      productData.image = image;
+    }
 
     const product = await createProduct(productData);
 
@@ -103,18 +100,19 @@ const handleGetProduct = async (req, res, next) => {
     console.log("my error", error);
   }
 };
+
 const handleDeleteProduct = async (req, res, next) => {
   try {
     const { slug } = req.params;
     await deleteProductBySlug(slug);
-    // console.log(product) 
+    // console.log(product)
 
     return successResponse(res, {
       statusCode: 200,
       message: `Product deleted successfully.`,
     });
   } catch (error) {
-    next(error)
+    next(error);
   }
 };
 
@@ -157,7 +155,7 @@ const handleUpdateProduct = async (req, res, next) => {
       { slug },
       updates,
       updateOptions
-    ); 
+    );
 
     if (!updatedProduct) {
       throw createError(404, "Product with this id doesn't exists");
