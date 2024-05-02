@@ -2,6 +2,7 @@ const createError = require("http-errors");
 const slugify = require("slugify");
 const Product = require("../models/productModel");
 const Category = require("../models/categoryModel");
+const deleteImage = require("../helper/deleteImage");
 
 const createProduct = async (productData) => {
   const { name, description, price, quantity, shipping, category, image } =
@@ -61,9 +62,14 @@ const getProductBySlug = async (slug) => {
 
 const deleteProductBySlug = async (slug) => {
   const product = await Product.findOneAndDelete({ slug });
-  // console.log(product)
+
   if (!product) {
     throw createError(404, "No product found when delete a single.");
+  }
+  
+
+  if (product.image) {
+    await deleteImage(product.image);
   }
   return product;
 };
