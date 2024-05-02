@@ -66,7 +66,6 @@ const deleteProductBySlug = async (slug) => {
   if (!product) {
     throw createError(404, "No product found when delete a single.");
   }
-  
 
   if (product.image) {
     await deleteImage(product.image);
@@ -74,9 +73,39 @@ const deleteProductBySlug = async (slug) => {
   return product;
 };
 
+const updatedProductBySlug = async (slug, updates, updateOptions) => {
+  try {
+    const product = await Product.findOne({ slug: slug });
+
+    if (!product) {
+      throw createError(404, "This Product doesn't exists");
+    } else if (product.image !== "default.jpeg") {
+      await deleteImage(product.image);
+    }
+
+    const updatedProduct = await Product.findOneAndUpdate(
+      { slug },
+      updates,
+      updateOptions
+    );
+
+    if (!updatedProduct) {
+      throw createError(
+        404,
+        "For some Issue Product with this id is not possible to update!!"
+      );
+    }
+
+    return updatedProduct;
+  } catch (error) {
+    throw createError(404, "product could not update in services!");
+  }
+};
+
 module.exports = {
   createProduct,
   getProducts,
   getProductBySlug,
   deleteProductBySlug,
+  updatedProductBySlug,
 };

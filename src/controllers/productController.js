@@ -9,6 +9,7 @@ const {
   getProducts,
   getProductBySlug,
   deleteProductBySlug,
+  updatedProductBySlug,
 } = require("../services/productService");
 const Category = require("../models/categoryModel");
 
@@ -128,19 +129,18 @@ const handleUpdateProduct = async (req, res, next) => {
       "price",
       "sold",
       "quantity",
-      "shipping",
-      "categoryName",
+      "shipping"
     ];
     for (const key in req.body) {
       if (allowedFields.includes(key)) {
+        if (key === "name") {
+          updates.slug = slugify(req.body[key])
+        }
         updates[key] = req.body[key];
       }
-      // } else if (key === "email") {
-      //   throw createError(400, "Email can not be updated.");
-      // }
     }
 
-    const image = req.file;
+    const image = req.file?.path;
     if (image) {
       if (image.size > 1024 * 1024 * 4) {
         throw createError(
@@ -148,18 +148,16 @@ const handleUpdateProduct = async (req, res, next) => {
           "Image file is too large. It must be less than 4mb"
         );
       }
-      updates.image = image.buffer.toString("base64");
+      updates.image = image;
     }
 
-    const updatedProduct = await Product.findOneAndUpdate(
-      { slug },
+    const updatedProduct = await updatedProductBySlug(
+      slug,
       updates,
       updateOptions
     );
 
-    if (!updatedProduct) {
-      throw createError(404, "Product with this id doesn't exists");
-    }
+    
     return successResponse(res, {
       statusCode: 202,
       message: "Product was updated successfully",
