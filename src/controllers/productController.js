@@ -15,15 +15,7 @@ const Category = require("../models/categoryModel");
 
 const handleCreateProduct = async (req, res, next) => {
   try {
-    const {
-      name,
-      description,
-      price,
-      quantity,
-      shipping,
-      category,
-      categoryName,
-    } = req.body;
+    const { name, description, price, quantity, shipping, category } = req.body;
 
     const image = req.file?.path;
 
@@ -42,7 +34,7 @@ const handleCreateProduct = async (req, res, next) => {
       price,
       quantity,
       shipping,
-      category
+      category,
     };
 
     if (image) {
@@ -63,10 +55,16 @@ const handleCreateProduct = async (req, res, next) => {
 
 const handleGetProducts = async (req, res, next) => {
   try {
+    const search = req.query.search || "";
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 4;
 
-    const productsData = await getProducts(page, limit);
+    const searchRegExp = new RegExp(".*" + search + ".*", "i");
+    const filter = {
+      $or: [{ name: { $regex: searchRegExp } }],
+    };
+
+    const productsData = await getProducts(page, limit, filter);
 
     return successResponse(res, {
       statusCode: 200,
@@ -129,12 +127,12 @@ const handleUpdateProduct = async (req, res, next) => {
       "price",
       "sold",
       "quantity",
-      "shipping"
+      "shipping",
     ];
     for (const key in req.body) {
       if (allowedFields.includes(key)) {
         if (key === "name") {
-          updates.slug = slugify(req.body[key])
+          updates.slug = slugify(req.body[key]);
         }
         updates[key] = req.body[key];
       }
@@ -157,7 +155,6 @@ const handleUpdateProduct = async (req, res, next) => {
       updateOptions
     );
 
-    
     return successResponse(res, {
       statusCode: 202,
       message: "Product was updated successfully",
