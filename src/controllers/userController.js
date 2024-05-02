@@ -15,6 +15,7 @@ const emailWithNodeMailer = require("../helper/email");
 const bcrypt = require("bcryptjs");
 const checkUserExists = require("../helper/checkUserExists");
 const sendEmail = require("../helper/sendEmail");
+const cloudinary = require("../config/cloudinary");
 const {
   handleUserAction,
   findeUsers,
@@ -91,11 +92,8 @@ const handleDeleteUserById = async (req, res, next) => {
 };
 
 const handleProcessRegister = async (req, res, next) => {
-  // console.log("emad 1");
   try {
     const { name, email, password, phone, address } = req.body;
-    // res.send(req.body);
-    // console.log("emad 2");
 
     const image = req.file?.path;
 
@@ -105,9 +103,6 @@ const handleProcessRegister = async (req, res, next) => {
         "Image file is too large. It must be less than 4mb"
       );
     }
-    // console.log("emad 3");
-
-    // const imageBufferString = image.buffer.toString("base64");
 
     const userExists = await checkUserExists(email);
 
@@ -117,7 +112,6 @@ const handleProcessRegister = async (req, res, next) => {
         "User with this email already exist. Please login"
       );
     }
-    // console.log("emad 4");
 
     // create jwt
     const tokenPayload = {
@@ -146,7 +140,6 @@ const handleProcessRegister = async (req, res, next) => {
 
     //send email with nodemailer
     sendEmail(emailData);
-    // console.log("emai emad");
 
     return successResponse(res, {
       statusCode: 200,
@@ -174,6 +167,17 @@ const handleActivateUserAccount = async (req, res, next) => {
           409,
           "User with this email already exist. Please login"
         );
+      }
+
+      const image = decoded.image;
+      if (image) {
+        const response = await cloudinary.uploader.upload(
+          image,
+          {
+            folder: "EcommerceImageServer/users",
+          }
+        );
+        decoded.image = response.secure_url;
       }
 
       const user = await User.create(decoded);
