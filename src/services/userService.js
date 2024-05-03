@@ -7,6 +7,10 @@ const deleteImage = require("../helper/deleteImage");
 const sendEmail = require("../helper/sendEmail");
 const { jwtResetPasswordKey, clientURL } = require("../secret");
 const { createJSONWebToken } = require("../helper/jsonwebtoken");
+const cloudinary = require("../config/cloudinary");
+const {
+  publicIdWithoutExtensionFromUrl,
+} = require("../helper/cloudinaryHelper");
 
 const findeUsers = async (search, limit, page) => {
   try {
@@ -62,18 +66,37 @@ const findUserById = async (id, options = {}) => {
 
 const deleteUserById = async (id, options = {}) => {
   try {
+    const existingUser = await User.findOne({
+      _id: id,
+    });
+
+    if (existingUser && existingUser.image) {
+      const publicId = await publicIdWithoutExtensionFromUrl(
+        existingUser.image
+      );
+      
+
+      const { result } = await cloudinary.uploader.destroy(
+        `EcommerceImageServer/users/${publicId}`
+      );
+      
+      if (result !== "ok") {
+        throw new Error(
+          "User image was not deleted successfully from cloudinary. Please try again!"
+        );
+      } 
+    }
+
     const user = await User.findByIdAndDelete({
       _id: id,
       isAdmin: false,
     });
+    
 
     if (!user) {
       throw createError(404, "User not found you want to delete!");
     }
 
-    if (user && user.image) {
-      await deleteImage(user.image);
-    }
 
     return user;
   } catch (error) {
@@ -180,7 +203,6 @@ const updateUserPasswordById = async (
   }
 };
 
-
 const forgetPasswordByEmail = async (email) => {
   try {
     const userData = await User.findOne({ email: email });
@@ -209,7 +231,6 @@ const forgetPasswordByEmail = async (email) => {
 
     return token;
   } catch (error) {
-   
     throw error;
   }
 };
@@ -221,7 +242,7 @@ const resetPassword = async (token, password) => {
     if (!decoded) {
       throw createError(400, "Invalid or expired token.");
     }
-    
+
     const filter = { email: decoded.email };
     const update = { password: password };
     const options = { new: true };
@@ -234,7 +255,6 @@ const resetPassword = async (token, password) => {
     if (!updatedUser) {
       throw createError(400, "Password reset failed");
     }
-
   } catch (error) {
     throw error;
   }

@@ -33,8 +33,8 @@ const handleLogin = async (req, res, next) => {
     if (user.isBanned) {
       throw createError(403, "You are Banned. Please contact authority");
     }
-    console.log(user)
-    console.log({user})
+    // console.log(user)
+    // console.log({user})
 
     // token, cookie
     const accessToken = createJSONWebToken({ user }, jwtAccessKey, "5m");
