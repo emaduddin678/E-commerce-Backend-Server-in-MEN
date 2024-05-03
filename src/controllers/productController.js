@@ -12,6 +12,7 @@ const {
   updatedProductBySlug,
 } = require("../services/productService");
 const Category = require("../models/categoryModel");
+const cloudinary = require("../config/cloudinary");
 
 const handleCreateProduct = async (req, res, next) => {
   try {
@@ -26,6 +27,17 @@ const handleCreateProduct = async (req, res, next) => {
       );
     }
 
+    // This is my checking for productExists
+    const productExists = await Product.exists({ slug: slugify(name) });
+
+    if (productExists) {
+      throw createError(
+        409,
+        "Product with the same name already exist. Please change the model number or anything!"
+      );
+    }
+    // End of my checking for productExists
+
     // const imageBufferString = image.buffer.toString("base64");
 
     const productData = {
@@ -38,7 +50,11 @@ const handleCreateProduct = async (req, res, next) => {
     };
 
     if (image) {
-      productData.image = image;
+      const response = await cloudinary.uploader.upload(image, {
+        folder: "EcommerceImageServer/products",
+      });
+
+      productData.image = response.secure_url;
     }
 
     const product = await createProduct(productData);
@@ -63,6 +79,7 @@ const handleGetProducts = async (req, res, next) => {
     const filter = {
       $or: [{ name: { $regex: searchRegExp } }],
     };
+    console.log(searchRegExp);
 
     const productsData = await getProducts(page, limit, filter);
 

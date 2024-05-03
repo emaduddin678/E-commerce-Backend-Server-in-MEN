@@ -3,6 +3,11 @@ const slugify = require("slugify");
 const Product = require("../models/productModel");
 const Category = require("../models/categoryModel");
 const deleteImage = require("../helper/deleteImage");
+const {
+  publicIdWithoutExtensionFromUrl,
+  deleteFileFromCloudinary,
+} = require("../helper/cloudinaryHelper");
+const cloudinary = require("../config/cloudinary");
 
 const createProduct = async (productData) => {
   const { name, description, price, quantity, shipping, category, image } =
@@ -30,7 +35,7 @@ const createProduct = async (productData) => {
   return product;
 };
 
-const getProducts = async (page = 1, limit = 4, filter={}) => {
+const getProducts = async (page = 1, limit = 4, filter = {}) => {
   const products = await Product.find(filter)
     .populate("category")
     .skip((page - 1) * limit)
@@ -61,16 +66,28 @@ const getProductBySlug = async (slug) => {
 };
 
 const deleteProductBySlug = async (slug) => {
-  const product = await Product.findOneAndDelete({ slug });
+  try {
+    const existingProduct = await Product.findOne({
+      slug,
+    });
 
-  if (!product) {
-    throw createError(404, "No product found when delete a single.");
-  }
+    if (existingProduct && existingProduct.image) {
+      const publicId = await publicIdWithoutExtensionFromUrl(
+        existingProduct.image
+      );
 
-  if (product.image) {
-    await deleteImage(product.image);
+      await deleteFileFromCloudinary(publicId, "products", "Product");
+    }
+    const product = await Product.findOneAndDelete({ slug });
+
+    if (!product) {
+      throw createError(404, "No product found with this slug.");
+    }
+
+    return product;
+  } catch (error) {
+    throw error;
   }
-  return product;
 };
 
 const updatedProductBySlug = async (slug, updates, updateOptions) => {

@@ -10,6 +10,7 @@ const { createJSONWebToken } = require("../helper/jsonwebtoken");
 const cloudinary = require("../config/cloudinary");
 const {
   publicIdWithoutExtensionFromUrl,
+  deleteFileFromCloudinary,
 } = require("../helper/cloudinaryHelper");
 
 const findeUsers = async (search, limit, page) => {
@@ -74,29 +75,18 @@ const deleteUserById = async (id, options = {}) => {
       const publicId = await publicIdWithoutExtensionFromUrl(
         existingUser.image
       );
-      
 
-      const { result } = await cloudinary.uploader.destroy(
-        `EcommerceImageServer/users/${publicId}`
-      );
-      
-      if (result !== "ok") {
-        throw new Error(
-          "User image was not deleted successfully from cloudinary. Please try again!"
-        );
-      } 
+      await deleteFileFromCloudinary(publicId, "users", "User");
     }
 
     const user = await User.findByIdAndDelete({
       _id: id,
       isAdmin: false,
     });
-    
 
     if (!user) {
       throw createError(404, "User not found you want to delete!");
     }
-
 
     return user;
   } catch (error) {
