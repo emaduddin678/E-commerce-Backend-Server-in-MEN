@@ -22,6 +22,7 @@ const deleteFileFromCloudinary = async (publicId, folderName, modelName) => {
         `${modelName} image was not deleted successfully from cloudinary. Please try again!`
       );
     }
+    return true;
   } catch (error) {
     throw error;
   }

@@ -156,19 +156,11 @@ const handleUpdateProduct = async (req, res, next) => {
     }
 
     const image = req.file?.path;
-    if (image) {
-      if (image.size > 1024 * 1024 * 4) {
-        throw createError(
-          400,
-          "Image file is too large. It must be less than 4mb"
-        );
-      }
-      updates.image = image;
-    }
 
     const updatedProduct = await updatedProductBySlug(
       slug,
       updates,
+      image,
       updateOptions
     );
 

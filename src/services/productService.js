@@ -90,15 +90,38 @@ const deleteProductBySlug = async (slug) => {
   }
 };
 
-const updatedProductBySlug = async (slug, updates, updateOptions) => {
+const updatedProductBySlug = async (slug, updates, image, updateOptions) => {
   try {
     const product = await Product.findOne({ slug: slug });
 
     if (!product) {
       throw createError(404, "This Product doesn't exists");
-    } else if (product.image !== "default.jpeg") {
-      await deleteImage(product.image);
     }
+
+    if (product && product.image) {
+      const publicId = await publicIdWithoutExtensionFromUrl(product.image);
+
+      if (!publicId) {
+        throw createError(404, "Public Id for this product not found!");
+      }
+
+      await deleteFileFromCloudinary(publicId, "products", "Product");
+    }
+    if (image) {
+      if (image.size > 1024 * 1024 * 4) {
+        throw createError(
+          400,
+          "Image file is too large. It must be less than 4mb"
+        );
+      }
+      const response = await cloudinary.uploader.upload(image, {
+        folder: "EcommerceImageServer/products",
+      });
+
+      updates.image = response.secure_url;
+    }
+
+    
 
     const updatedProduct = await Product.findOneAndUpdate(
       { slug },
